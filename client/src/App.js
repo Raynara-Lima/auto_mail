@@ -4,7 +4,7 @@ import axios from 'axios';
 import {FormControl, Button,Col, Row} from 'react-bootstrap';
 
 import './App.css';
-const URL = "./mapa2.png"
+const URL = "./mapa.jpg"
 const MAP = {
   name: "my-map",
   areas: [
@@ -27,8 +27,8 @@ class App extends Component {
 	map:  {name: "my-map",
 	areas: [
 	  // { name: "1", shape: "poly", coords: [25,33,27,300,128,240,128,94], preFillColor: "green", fillColor: "blue"  },
-	  { name: "2", shape: "poly", coords: [130,220,130,240,150,240,150,220], preFillColor: "pink"  },
-	  { name: "2", shape: "poly", coords: [130,220,130,240,150,240,150,220], preFillColor: "black"  },
+	  { name: "2", shape: "poly", coords: [125,270,145,270,145,250,125,250], preFillColor: "pink"  },
+	  { name: "1", shape: "poly", coords: [110,260,110,270,125,270,125,260], preFillColor: "black"  },
 
 	  // { name: "3", shape: "poly", coords: [381,241,383,94,462,53,457,282], fillColor: "yellow"  },
 	  // { name: "4", shape: "poly", coords: [245,285,290,285,274,239,249,238], preFillColor: "red"  },
@@ -37,18 +37,11 @@ class App extends Component {
   };
 
   componentDidMount() {
-	this.callApi()
-  	.then(res => this.setState({ response: res.express }))
-	  .catch(err => console.log(err));
+	setInterval(this.desenharTrajetoria, 1000);
+
   }
 
-  callApi = async () => {
-	const response = await fetch('/api/mensagem');
-	const body = await response.json();
-	if (response.status !== 200) throw Error(body.message);
 
-	return body;
-  };
   enterArea(area) {
     this.setState({ hoveredArea: area });
 }
@@ -109,39 +102,41 @@ getMensagem = () => {
 			.catch(err => console.log(err));
 
   };
+
+  desenharTrajetoria = () =>{
+	let p0 
+	let p2 
+	let state = this.state
+	for(var i = 0; i < 10; ++i) {
+		p0 = this.state.map.areas[1].coords[0] -= 0.2
+		p2 = this.state.map.areas[1].coords[2] -=0.2
+	}
+	state.map.areas[1].coords[0] = p0
+	state.map.areas[1].coords[2] = p2
+	this.setState(state)
+  }
+
   render() {
 	return (
-  	<div className="container">
-		  <Row style={{paddingTop: '15px'}}>
+  	<div >
+		  <Row style={{backgroundColor:'black'}}>
 			  <Col md={12}>
-			  <Col md={6}>
-		 	 <img src='./logoAutoMail.jpg' width='30%' />
+			  <Col md={6} style={{padding: 0}}>
+		 	 <img src='./logoAutoMail.jpg' width='50%' />
 			</Col>
-			{/* <Col md={6}>Estação de Controle</Col> */}
+			<Col md={6} style={{marginLeft: '-22%',fontSize: '40px', color: 'white', marginTop: '8px'}}>
+				Estação de Controle
+				</Col>
 			</Col>
 		  </Row>
-		  <Row style={{paddingTop: '15px'}}>
-		  <Col md={9}>
+		  {/* <Row style={{paddingTop: '70px'}}>
+			  <Col md={12}>
 
-			  <Col md={6}>
-			  <FormControl type="text" value={this.state.mensagem} onChange={(event) => this.setState({mensagem: event.target.value})}/>
 			  </Col>
-			  <Col md={6}>
-				  <Button onClick={this.setMensagem}>Enviar</Button>
-				  </Col>
-				  </Col>
-		  </Row>
-		  <Row style={{paddingTop: '15px'}}>
-		  <Col md={6}>
-			<Col md={3}>
-		  		<Button onClick={this.getMensagem}>Ver mensagem</Button>
-			</Col>
-			<Col md={8}>
-				  <FormControl type="text" value={this.state.mensagemRecebida }  disabled/>
-		  </Col>
-	</Col>
-		  </Row>
-		  <Row style={{paddingTop: '70px'}}>
+			  </Row> */}
+		  
+		<Row style={{paddingTop: '70px'}}>
+			<Col md={6} style={{marginLeft: '13%'}}>
 			  {/* <img src='./mapa.jpg'></img> */}
      <ImageMapper src={URL} map={this.state.map} width={1000}
     	onLoad={() => this.load()}
@@ -162,7 +157,7 @@ getMensagem = () => {
 						{this.state.msg ? this.state.msg : null}
 					</pre>
 					<pre>{this.state.moveMsg ? this.state.moveMsg : null}</pre>
-  	
+					</Col>
 	  </Row>
 	  </div>
 	  
