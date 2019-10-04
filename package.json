@@ -12,9 +12,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fortawesome/react-fontawesome": "^0.1.4",
     "@google-cloud/pubsub": "^0.31.1",
     "cors": "^2.8.5",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "react-fontawesome": "^1.6.1",
+    "recharts": "^1.7.1"
   },
   "devDependencies": {
     "concurrently": "^3.6.1"
