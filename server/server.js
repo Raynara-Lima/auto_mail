@@ -45,7 +45,8 @@ const messageHandler = message => {
   console.log(`\tAttributes: ${message.attributes}`);
   messageCount += 1;
 msg = JSON.parse(message.data)
-fs.writeFile('./banco.txt', 'Hello content!', function (err) {
+    let txt = JSON.stringify(msg)
+fs.writeFile('./banco.txt', txt, function (err) {
   if (err) throw err;
   console.log('Saved!');
 });
@@ -58,8 +59,13 @@ console.log( `${message.data}`)
 };
 
 //Listen for new messages until timeout is hit
-subscription.on(`message`, messageHandler);
 
+subscription.on(`message`, messageHandler);
+if(messageCount === 0){
+
+    return res.json({ success: true, data: 'teste' });
+
+}
 setTimeout(() => {
   subscription.removeListener('message', messageHandler);
   console.log(`${messageCount} message(s) received.`);
