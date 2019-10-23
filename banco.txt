@@ -1,1 +1,0 @@
-{"bateria":{"porcentagem":"100"},"modo_operacao":"CIRCULAR","info_sensores":{"vel":"b","acc":"d","dist":"f"}}
