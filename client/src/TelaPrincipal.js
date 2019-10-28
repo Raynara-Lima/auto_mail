@@ -41,7 +41,6 @@ class TelaPrincipal extends Component {
                     // { name: "1", shape: "poly", coords: [25,33,27,300,128,240,128,94], preFillColor: "green", fillColor: "blue"  },
                     { name: "2", shape: "poly", coords: [125,270,145,270,145,250,125,250], preFillColor: "pink"  },
                     { name: "1", shape: "poly", coords: [110,260,110,270,125,270,125,260], preFillColor: "black"  },
-                    { name: "4", shape: "img", coords: [245,285,290,285,274,239,249,238], preFillColor: "red"  },
                     // { name: "5", shape: "circle", coords: [170, 100, 25 ] },
                 ]}
         }
