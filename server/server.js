@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 var cors = require('cors')
-
+var fs = require('fs')
 const app = express();
 const port = process.env.PORT || 8080;
 
@@ -30,7 +30,7 @@ app.listen(port, () => console.log(`Listening on port ${port}`));
 
 
 router.get('/getData' , (req, res) => {
-  const subscriptionName = 'teste';
+  const subscriptionName = 'Web_App';
  const timeout = 60;
 
 // References an existing subscription
@@ -44,9 +44,12 @@ const messageHandler = message => {
   console.log(`\tData: ${message.data}`);
   console.log(`\tAttributes: ${message.attributes}`);
   messageCount += 1;
-console.log( JSON.parse(message.data).foo)
-msg =JSON.parse(message.data).foo
-
+msg = JSON.parse(message.data)
+    let txt = JSON.stringify(msg)
+fs.writeFile('./banco.txt', txt, function (err) {
+  if (err) throw err;
+  console.log('Saved!');
+});
 console.log( `${message.data}`)
   // "Ack" (acknowledge receipt of) the message
 
@@ -56,8 +59,13 @@ console.log( `${message.data}`)
 };
 
 //Listen for new messages until timeout is hit
-subscription.on(`message`, messageHandler);
 
+subscription.on(`message`, messageHandler);
+if(messageCount === 0){
+
+    return res.json({ success: true, data: 'teste' });
+
+}
 setTimeout(() => {
   subscription.removeListener('message', messageHandler);
   console.log(`${messageCount} message(s) received.`);
