@@ -47,7 +47,7 @@ class TelaPrincipal extends Component {
     }
     componentDidMount() {
         // setInterval(this.desenharTrajetoria, 1000);
-         this.getMensagem()
+        // this.getMensagem()
 
     }
 
@@ -157,7 +157,7 @@ class TelaPrincipal extends Component {
         return(
             <div >
                 <Row style={{backgroundColor:'black'}}>
-                    <Col xs={12} md={6} >
+                    <Col xs={12} md={6} style={{padding: 0}}>
                         <img src='./logoAutoMail.jpg' width='50%' />
                     </Col>
                     <Col  xs={6} md={4}style={{marginLeft: '-22%',fontSize: '34px', color: 'white', marginTop: '15px'}}>

@@ -2,7 +2,6 @@
   import { LineChart, Line, XAxis,YAxis, CartesianGrid, Tooltip, Legend} from 'recharts';
   import {FormControl, Button,Col, Row, InputGroup} from 'react-bootstrap';
   import estilo from './css/estilo.css'
-  import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
     const data = [
       {name: 'Page A', s: 2400, amt: 2400},
       {name: 'Page B', s: 1398, amt: 2210},
@@ -42,19 +41,16 @@
   render(){
       return(
           <div>
-              <Row style={{backgroundColor:'black'}}>
-                  <Col xs={12} md={6} >
-                      <img src='../public/logoAutoMail.jpg' width='50%' />
-                  </Col>
-                  <Col  xs={6} md={4}style={{marginLeft: '-22%',fontSize: '34px', color: 'white', marginTop: '15px'}}>
-                      <label>Estação de Controle</label>
-                  </Col>
-                  <Col xs={6} md={2}  style={{marginTop: '22px',  color: 'white'}}>
-                      <Button style={{backgroundColor:'#333', borderColor: '#333'}}> Contato</Button>
-                  </Col>
-
-
-              </Row>
+          <Row style={{backgroundColor:'black'}}>
+            <Col md={12}>
+            <Col md={6} style={{padding: 0}}>
+            <img src='./logoAutoMail.jpg' width='50%' />
+          </Col>
+          <Col md={6} style={{marginLeft: '-22%',fontSize: '34px', color: 'white', marginTop: '15px'}}>
+              Estação de Controle
+              </Col>
+          </Col>
+        </Row>
         <div className='container'>
 
         <Row>
