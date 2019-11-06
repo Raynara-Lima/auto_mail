@@ -27,3 +27,65 @@
 .mb-3, .my-3 {
     margin-bottom: 1rem!important;
 }
+
+.menu{
+    background-color:  black;
+}
+
+.title-menu{
+    color: white!important;
+    font-size: 28px !important;
+    margin-left: 3%;
+}
+
+.contato-menu{
+    margin-left: 10%;
+}
+.no-padding{
+padding: 0!important;
+}
+.botao-incio{
+    background-color: #333333de!important;
+    border-color:#333333de!important;
+    font-size: 2.5rem !important;
+    padding: .5rem 1rem;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    border-radius: .3rem;
+    color: white;
+}
+.botao-incio:hover{
+    color: white;
+    text-decoration: none;
+
+}
+.botao-sair{
+    background-color: #333333de!important;
+    border-color:#333333de!important;
+    font-size: 1rem !important;
+    padding: 0.55rem 0.75rem;
+    line-height: 1.5;
+    border-radius: .3rem;
+    color: white;
+}
+.botao-sair:hover{
+    color: white;
+    text-decoration: none;
+
+}
+.botao-contato{
+    background-color: #333 !important;
+    border-color: #333 !important;
+
+}
+
+.card-tela-principal{
+    border: 1px solid rgb(181, 171, 171) !important;
+    height: 110px;
+    width: 70%;
+    left: 15%;
+    margin-top: 4%;
+}
+.botoes-tela-principal{
+    align-self: center;
+}
