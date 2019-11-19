@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import TelaPrincipal from './TelaPrincipal.js'
 import VisualizarSensores from './VisualizarSensores.js'
-import TelaInicio from './TelaInicio.js'
+import TelaInicial from './TelaInicial.js'
 import { Route, BrowserRouter, Switch} from 'react-router-dom'
 import { faEnvelope, faKey, faChevronDown, faChevronUp, faTrash, faEdit, faCheckCircle, faTimesCircle, faBatteryFull, faBatteryQuarter,faTimes, faSignInAlt}  from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -29,7 +29,7 @@ class App extends Component {
 
 		<Route path="/sensores"   component={VisualizarSensores} />
 		<Route path="/telaPrincipal"  exact={true}  component={TelaPrincipal} />
-		<Route path="/"  exact={true}  component={TelaInicio} />
+		<Route path="/"  exact={true}  component={TelaInicial} />
 
 		</Switch>
 

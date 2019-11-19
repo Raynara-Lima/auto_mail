@@ -17,12 +17,89 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 
-app.listen(port, () => console.log(`Listening on port ${port}`));
+
+const socketIO = require('socket.io')
+const http = require('http')
+
+const server = http.createServer(app)
+const io = socketIO(server)
+
+io.on('connection', socket => {
+  //console.log('aqui')
+//this.getData()
+socket.on('getData', (information) => {
+  getData(function(data){
+        io.sockets.emit('getData', json)
+  })
+})
+
+  socket.on('disconnect', () => {
+    console.log('user disconnected')
+  })
+})
 
 
-router.get('/getData' , (req, res) => {
+server.listen(port, () => console.log(`Listening on port ${port}`))
+
+
+    function getData(){
+      let json
+      receberMensagensPubSub(function(data){
+
+        if(data.qtdMensagens === 0){
+          getJson(function(infoJson){
+          json = infoJson
+        })
+        }else if(data.qtdMensagens === 1){
+          json = data.json[0]
+          salvarJson(json)
+        }else{
+          json = data.json[data.qtdMensagens - 1]
+          salvarJson(json)
+          }
+      })
+      return json
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+router.get('/getDataSensores' , (req, res) => {
   var data
   res.setHeader('Access-Control-Allow-Origin', '*');  
+
+  receberMensagensPubSub(function(data){
+    if(data.qtdMensagens === 0){
+        getJson(function(infoJson){
+          json = infoJson
+          json.instru.vg = ""
+          console.log(json)
+          return res.json({ success: true, data: infoJson });
+        })
+    }else if(data.qtdMensagens === 1){
+      salvarJson(data.json[0])
+      return res.json({ success: true, data: data.json[0] });
+      }else{
+        let json = data.json[data.qtdMensagens - 1]
+        salvarJson(json)
+      return res.json({ success: true, data: json});
+      }
+
+  })
+
+});
+router.get('/getData' , (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');  
+
+  var data
 
   receberMensagensPubSub(function(data){
     if(data.qtdMensagens === 0){
@@ -43,11 +120,11 @@ router.get('/getData' , (req, res) => {
   })
 
 });
-
       function receberMensagensPubSub (callback){
 
+
         const subscriptionName = 'Web_App';
-          const timeout = 10;
+          const timeout = 1;
           const subscription = pubsub.subscription(subscriptionName);
           let messageCount = 0;
           let json = []
@@ -97,19 +174,16 @@ router.get('/getData' , (req, res) => {
 
 router.post('/setData' , (req, res) => {
   const topicName = 'Car_input';
-//console.log(req.query[0])
-//let teste = JSON.parse(req.query[0])
-  const data = JSON.stringify( {"modo":"", "destino": "", "sentido": "", "estado": ""});
+  console.log(req.query[0])
+  let json = JSON.parse(req.query[0])
+  const data = JSON.stringify( json);
 
 // Publishes the message as a string, e.g. "Hello, world!" or JSON.stringify(someObject)
   const dataBuffer = Buffer.from(data);
-
-
-
   publishMessage(topicName, dataBuffer)
-
   res.setHeader('Access-Control-Allow-Origin', '*');  
-    return res.json({ success: true});
+  
+  return res.json({ success: true});
 })
 
     async function publishMessage(topicName, dataBuffer){
