@@ -13,7 +13,7 @@ app.use('/api', router);
 app.use(cors())
 app.use(bodyParser.urlencoded({
     extended: true
-}));
+})); 
 
 app.use(bodyParser.json());
 
@@ -25,17 +25,21 @@ const server = http.createServer(app)
 const io = socketIO(server)
 
 io.on('connection', socket => {
-  //console.log('aqui')
-//this.getData()
-socket.on('getData', (information) => {
-  getData(function(data){
-        io.sockets.emit('getData', json)
-  })
-})
+  
+ socket.on('getData', () => {
+  getData()
+//   getData()
+      socket.on("disconnect", ()=>{
+        console.log("Disconnected")
+    })
+ })
 
-  socket.on('disconnect', () => {
-    console.log('user disconnected')
-  })
+socket.on('getDataSensores', (information) => {
+getDataSensores(function(data){
+  io.sockets.emit('getDataSensores', data)
+})
+})
+ 
 })
 
 
@@ -47,18 +51,41 @@ server.listen(port, () => console.log(`Listening on port ${port}`))
       receberMensagensPubSub(function(data){
 
         if(data.qtdMensagens === 0){
+          //getJson()
+        }else if(data.qtdMensagens === 1){
+          json = data.json[0]
+         // salvarJson(json)
+          // io.sockets.emit('getData', json, qtdMensagens)
+        }else{
+          json = data.json[data.qtdMensagens - 1]
+          //salvarJson(json)
+          // io.sockets.emit('getData', json, qtdMensagens)
+          }
+      })
+
+      //console.log(json)
+
+     // return json
+    }
+
+    function getDataSensores(){
+      let json
+      receberMensagensPubSub(function(data){
+
+        if(data.qtdMensagens === 0){
           getJson(function(infoJson){
           json = infoJson
         })
         }else if(data.qtdMensagens === 1){
           json = data.json[0]
           salvarJson(json)
+          io.sockets.emit('getData', docs)
         }else{
           json = data.json[data.qtdMensagens - 1]
           salvarJson(json)
           }
       })
-      return json
+     // return json
     }
 
 
@@ -72,54 +99,56 @@ server.listen(port, () => console.log(`Listening on port ${port}`))
 
 
 
-router.get('/getDataSensores' , (req, res) => {
-  var data
-  res.setHeader('Access-Control-Allow-Origin', '*');  
+// router.get('/getDataSensores' , (req, res) => {
+//   var data
+//   res.setHeader('Access-Control-Allow-Origin', '*');  
 
-  receberMensagensPubSub(function(data){
-    if(data.qtdMensagens === 0){
-        getJson(function(infoJson){
-          json = infoJson
-          json.instru.vg = ""
-          console.log(json)
-          return res.json({ success: true, data: infoJson });
-        })
-    }else if(data.qtdMensagens === 1){
-      salvarJson(data.json[0])
-      return res.json({ success: true, data: data.json[0] });
-      }else{
-        let json = data.json[data.qtdMensagens - 1]
-        salvarJson(json)
-      return res.json({ success: true, data: json});
-      }
+//   receberMensagensPubSub(function(data){
+//     if(data.qtdMensagens === 0){
+//         getJson(function(infoJson){
+//           json = infoJson
+//           json.instru.vg = ""
+//           console.log(json)
+//           return res.json({ success: true, data: infoJson });
+//         })
+//     }else if(data.qtdMensagens === 1){
+//       salvarJson(data.json[0])
+//       return res.json({ success: true, data: data.json[0] });
+//       }else{
+//         let json = data.json[data.qtdMensagens - 1]
+//         salvarJson(json)
+//       return res.json({ success: true, data: json});
+//       }
 
-  })
+//   })
 
-});
-router.get('/getData' , (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');  
+// });
+// router.get('/getData' , (req, res) => {
+//   res.setHeader('Access-Control-Allow-Origin', '*');  
 
-  var data
+//   var data
 
-  receberMensagensPubSub(function(data){
-    if(data.qtdMensagens === 0){
-        getJson(function(infoJson){
-          json = infoJson
-          console.log(json)
-          return res.json({ success: true, data: infoJson });
-        })
-    }else if(data.qtdMensagens === 1){
-      salvarJson(data.json[0])
-      return res.json({ success: true, data: data.json[0] });
-      }else{
-        let json = data.json[data.qtdMensagens - 1]
-        salvarJson(json)
-      return res.json({ success: true, data: json});
-      }
+//   receberMensagensPubSub(function(data){
+//     if(data.qtdMensagens === 0){
+//         getJson(function(infoJson){
+//           json = infoJson
+//           console.log(json)
+//           return res.json({ success: true, data: infoJson });
+//         })
+//     }else if(data.qtdMensagens === 1){
+//       salvarJson(data.json[0])
+//       return res.json({ success: true, data: data.json[0] });
+//       }else{
+//         let json = data.json[data.qtdMensagens - 1]
+//         salvarJson(json)
+//       return res.json({ success: true, data: json});
+//       }npm install builtin-modules
 
-  })
+//   })
 
-});
+// });
+
+
       function receberMensagensPubSub (callback){
 
 
@@ -131,10 +160,13 @@ router.get('/getData' , (req, res) => {
 
           const messageHandler = message => {
             console.log(`Received message ${message.id}:`);
-            console.log(`\tData: ${message.data}`);
+           // console.log(`\tData: ${message.data}`);
             messageCount += 1;
             json.push(JSON.parse(message.data))
+            console.log(JSON.parse(message.data))
             message.ack(); 
+            io.sockets.emit('getData',JSON.parse(message.data), messageCount)
+
           };
           subscription.on(`message`, messageHandler);
 
@@ -142,7 +174,7 @@ router.get('/getData' , (req, res) => {
               subscription.removeListener('message', messageHandler);
               console.log(`${messageCount} message(s) received.`);
               return callback({json: json, qtdMensagens:messageCount })
-          }, timeout * 1000);
+          }, timeout * 500);
             
         
 
@@ -163,28 +195,32 @@ router.get('/getData' , (req, res) => {
             });
           }
 
-        function getJson(callback){
+        function getJson(){
             var InfoJson = db.Mongoose.model('infoMailCar', db.InfoSchema, 'infoMailCar');
             InfoJson.findOne().lean().exec(
                function (e, docs) {
-                return callback(docs)
+                 console.log(docs)
+                io.sockets.emit('getData', docs, 0)
+
+               // return callback(docs)
+
             });
           }
 
 
 router.post('/setData' , (req, res) => {
   const topicName = 'Car_input';
-  console.log(req.query[0])
+
   let json = JSON.parse(req.query[0])
   const data = JSON.stringify( json);
-
-// Publishes the message as a string, e.g. "Hello, world!" or JSON.stringify(someObject)
+console.log(data)
   const dataBuffer = Buffer.from(data);
   publishMessage(topicName, dataBuffer)
-  res.setHeader('Access-Control-Allow-Origin', '*');  
   
-  return res.json({ success: true});
+  res.setHeader('Access-Control-Allow-Origin', '*');  
+  return res.json({ success: true}); 
 })
+
 
     async function publishMessage(topicName, dataBuffer){
        const messageId = await pubsub.topic(topicName).publish(dataBuffer);

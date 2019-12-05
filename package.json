@@ -14,14 +14,18 @@
   "dependencies": {
     "@fortawesome/react-fontawesome": "^0.1.7",
     "@google-cloud/pubsub": "^0.31.1",
-    "bootstrap": "^4.3.1",
+    "bootstrap": "^4.4.1",
+    "builtin-modules": "^3.1.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "http": "0.0.0",
-    "mongoose": "^5.7.7",
-    "react-fontawesome": "^1.6.1",
+    "http2": "^3.3.7",
+    "mongoose": "^5.7.13",
+    "natives": "^1.1.6",
+    "react-fontawesome": "^1.7.1",
     "react-image-mapper": "0.0.15",
-    "recharts": "^1.7.1",
+    "react-s-alert": "^1.4.1",
+    "recharts": "^1.8.5",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {

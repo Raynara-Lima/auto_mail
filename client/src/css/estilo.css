@@ -123,3 +123,15 @@ padding: 0!important;
     background-color: #000;
     border-radius: .25rem;
 }
+.container {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: 11% !important;
+    margin-left: auto;
+}
+.alert-danger {
+    color: #f8f9fa !important;
+    background-color: #721c24 !important;
+    border-color: #721c24 !important;
+}

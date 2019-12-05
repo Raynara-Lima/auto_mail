@@ -1,4 +1,9 @@
 import React, {Component} from 'react';
+import 'react-s-alert/dist/s-alert-default.css';
+import 'react-s-alert/dist/s-alert-css-effects/slide.css';
+
+import Alert from 'react-s-alert';
+
 import ImageMapper from 'react-image-mapper';
 import axios from 'axios';
 import { Button, Col, Row, Navbar, Card, Form, Tooltip} from 'react-bootstrap';
@@ -8,8 +13,8 @@ import {Link} from 'react-router-dom'
 import './css/estilo.css'
 import ModalModoExpr from './ModalModoExpr';
 import socketIOClient from "socket.io-client";
-const URL = "./mapaV4.jpg"
-
+import Alerta from './Alerta';
+const URL = "./mapaV4.jpg";
 
 class TelaPrincipal extends Component {
 
@@ -26,6 +31,11 @@ class TelaPrincipal extends Component {
             showModal: false,
             map:  {name: "my-map",
                 areas: [
+                    { name: "linha1", shape: "poly", coords: [], preFillColor: "#1E1B1B", strokeColor:"black"  },
+                    { name: "linha2", shape: "poly", coords: [],preFillColor: "#1E1B1B", strokeColor:"black"  },
+                    { name: "linha3", shape: "poly", coords: [], preFillColor: "#1E1B1B", strokeColor:"black"  },
+                    { name: "linha4", shape: "poly", coords: [], preFillColor: "#1E1B1B", strokeColor:"black"  },
+
                     { name: "car", shape: "poly", coords: [], preFillColor: "#C59C52",  strokeColor: "#F0E68C" },
 
                     { name: "roda1", shape: "circle", coords: [], preFillColor: "black" },
@@ -33,10 +43,7 @@ class TelaPrincipal extends Component {
                     { name: "roda3", shape: "circle", coords: [], preFillColor: "black" },
                     { name: "roda4", shape: "circle", coords: [], preFillColor: "black" },
 
-                    { name: "linha1", shape: "poly", coords: [], preFillColor: "#black" },
-                    { name: "linha2", shape: "poly", coords: [], preFillColor: "#black" },
-                    { name: "linha3", shape: "poly", coords: [], preFillColor: "#black" },
-                    { name: "linha4", shape: "poly", coords: [], preFillColor: "#black" },
+                   
 
                 ]},
             dadosMailCar:{
@@ -48,57 +55,114 @@ class TelaPrincipal extends Component {
                     veloy: " ", 
                     distan: " ",
                     angulo: " ",
-                    bate: 100,
+                    bate: "",
                     enco1: " ",
                     enco2: " ",
                     ultra1: " ",
                     ultra2: " ", 
                     ultra3: " "},
                     status: {
-                        modo: "1"
+                        modo: 1
                     },
                     coord: {
                         x: 0,
                         y: 0
                     },
-                    erros: []
+                    erros: [{code: 1}, {code: 2}]
             },
             corIconeBateria:  '',
             endpoint: "http://localhost:8080",
-            posicaoAnt: []
+            mostrarAlerta: false,
+            mensagensAlertas: []
         }
-        // const socket = socketIOClient(this.state.endpoint);
-        // socket.on('getData', (json) =>{
-        //     console.log(json)
-        //     this.setState({dadosMailCar: json})
-        // })
+         this.socket = socketIOClient(this.state.endpoint);
+         this.socket.on('getData', (json) =>{
+           // parseInt(json.status.modo)
+            console.log(json)
+
+            this.setState({dadosMailCar: json})
+            this.posicionarCar(this.state.dadosMailCar.coord.x, this.state.dadosMailCar.coord.y)
+           // this.mostrarErro()
+        })
 
     }
-    getMensagemTeste() {
-        const socket = socketIOClient(this.state.endpoint);
-        socket.emit('getData')
+
+    getMensagem() {
+       // const socket = socketIOClient(this.state.endpoint);
+        this.socket.emit('getData')
 
     }
 
     componentDidMount() {
-   this.posicionarCar(this.state.dadosMailCar.coord.x, this.state.dadosMailCar.coord.y)
-    // this.intervalo = setInterval( () =>  this.getMensagemTeste(), 1000);
-   //this.intervalo = setInterval( () =>  this.desenharTrajetoria(), 1000);
-
-       // this.setMensagem()
+      //  this.getMensagem()
+    this.posicionarCar(this.state.dadosMailCar.coord.x, this.state.dadosMailCar.coord.y)
+   this.intervalo = setInterval( () =>  this.getMensagem(), 100);
+    //this.intervalo = setInterval( () =>  this.desenharTrajetoria(), 1000);
+    
+   // this.setMensagem()
     }
 
+    mostrarErro = () =>{
+        let state = this.state
+        if(this.state.dadosMailCar.erros.length === 0){
+            state.mensagensAlertas = []
+        }else{
+        this.state.dadosMailCar.erros.forEach(erro => {
+            if(erro.code === 1){
+                state.mostrarAlerta = true
+            let mensagem = this.state.mensagensAlertas.find(msg => msg === "Perda de conexão" )
+            if(mensagem === undefined){
+                state.mensagensAlertas.push("Perda de conexão")
+            }
+            Alert.success('Message...', {
+                position: 'top-right'
+            });
+            Alert.error('Message...', {
+    position: 'top-right'
+});
+         // Alerta.handleAlert('error', mensagem)
+            }
+            else if(erro.code === 2){
+                state.mostrarAlerta = true
+                let mensagem = this.state.mensagensAlertas.find(msg => msg === "O dispositivo móvel está mais distante do que 20 cm da localização prevista" )
+                if(mensagem === undefined){
+                    state.mensagensAlertas.push("O dispositivo móvel está mais distante do que 20 cm da localização prevista")
+    
+                }
 
-    enterArea(area) {
-        this.setState({ hoveredArea: area });
+            }
+            else if(erro.code === 3){
+                state.mostrarAlerta = true
+                let mensagem = this.state.mensagensAlertas.find(msg => msg === "Encoder de uma determinada roda para de funcionar" )
+                if(mensagem === undefined){
+                    state.mensagensAlertas.push("Encoder de uma determinada roda para de funcionar")
+    
+                }
+
+            }
+        
+        });
     }
-    load() {
-        this.setState({ msg: "Interact with image !" });
+       // state.mostrarAlerta = false
+        this.setState(state)
+
+        // state.mensagensAlertas.map(msg =>{
+        //     Alerta.handleAlert('error', msg)
+
+        // })
+
     }
 
-    leaveArea(area) {
-        this.setState({ hoveredArea: area });
-    }
+    // enterArea(area) {
+    //     this.setState({ hoveredArea: area });
+    // }
+    // load() {
+    //     this.setState({ msg: "Interact with image !" });
+    // }
+
+    // leaveArea(area) {
+    //     this.setState({ hoveredArea: area });
+    // }
 
     getTipPosition(positionTooltip) {
         return { top: `${positionTooltip[1]}px`, left: `${positionTooltip[0]}px` , opacity: "1"};
@@ -151,7 +215,8 @@ class TelaPrincipal extends Component {
     };
 
     posicionarCar = ( xCm, yCm) =>{
-
+        parseFloat(xCm)
+        parseFloat(yCm)
         let x = 19.2 + (xCm * 0.255)
         let y = 229.55 + (yCm * 0.285)
         let valorDecCord1e3 = 0, valorDecCord0e6 = 0
@@ -161,19 +226,64 @@ class TelaPrincipal extends Component {
         let valoresIncRoda4 = []
         let valorDecRodasY = 0, valorDecRodasX = 0
         let map = this.state.map
-        let mapCar = map.areas[0]
+        let mapCar = map.areas[4]
+        let mapLinha1 = map.areas[0]
+        let mapLinha2= map.areas[1]
+        let mapLinha3 = map.areas[2]
+        let mapLinha4 = map.areas[3]
+        let mapRoda1 = map.areas[5]
+        let mapRoda2 = map.areas[6]
+        let mapRoda3 = map.areas[7]
+        let mapRoda4 = map.areas[8]
+
+        //Trajetoria
+
+          
+        //Trajetoria
+        if(this.state.dadosMailCar.status.modo === 1){
+        mapLinha1.coords[0] = 19.2 
+        mapLinha1.coords[2] = 19.2 + 2
+        mapLinha1.coords[4] = 19.2 + 2
+       mapLinha1.coords[6] = 19.2
+       mapLinha1.coords[1] = 283.6
+       mapLinha1.coords[3] = 283.6
+       mapLinha1.coords[5] = 233
+       mapLinha1.coords[7] = 233
+
+       mapLinha2.coords[0] = 19.2
+       mapLinha2.coords[2] = 475.8
+       mapLinha2.coords[4] = 475.8
+       mapLinha2.coords[6] = 19.2
+       mapLinha2.coords[1] = 285
+       mapLinha2.coords[3] = 285
+       mapLinha2.coords[5] = 287
+       mapLinha2.coords[7] = 287
+
+       mapLinha3.coords[0] = 475.8 
+       mapLinha3.coords[2] = 479.8 - 6
+       mapLinha3.coords[4] = 479.8 - 6
+       mapLinha3.coords[6] = 475.8 
+       mapLinha3.coords[1] = 285
+       mapLinha3.coords[3] = 285
+       mapLinha3.coords[5] = 230.67000000000002
+       mapLinha3.coords[7] = 230.67000000000002
+
+       mapLinha4.coords[0] = 475.8
+       mapLinha4.coords[2] = 19.2 
+       mapLinha4.coords[4] = 19.2 
+       mapLinha4.coords[6] = 475.8
+       mapLinha4.coords[1] = 230.55
+       mapLinha4.coords[3] = 230.55
+       mapLinha4.coords[5] = 232.55
+       mapLinha4.coords[7] = 232.55
+           }
         //Carrinho
        //x em cm 0
-        if(xCm === 0){
+        if(xCm <= 10 ){
             mapCar.coords[0] = x
             mapCar.coords[2] = x + 5.5
             mapCar.coords[4] = x + 5.5
             mapCar.coords[6] = x
-
-            // map.areas[5].coords[0] = x
-            // map.areas[5].coords[2] = x + 5.5
-            // map.areas[5].coords[4] = x + 5.5
-            // map.areas[5].coords[6] = x
 
             valorDecCord1e3 = 7.12
 
@@ -227,42 +337,32 @@ class TelaPrincipal extends Component {
             mapCar.coords[3] = y - valorDecCord1e3
             mapCar.coords[5] = y
             mapCar.coords[7] = y
-
-            // map.areas[5].coords[1] = y + valorDecCord1e3   + ( map.areas[5].coords[1] !== undefined ? map.areas[5].coords[1] : 0)
-            // map.areas[5].coords[3] = y + valorDecCord1e3 + ( map.areas[5].coords[3] !== undefined ? map.areas[5].coords[3] : 0)
-            // map.areas[5].coords[5] = y
-            // map.areas[5].coords[7] = y
         }else{
             mapCar.coords[1] = y
             mapCar.coords[3] = y
             mapCar.coords[5] = y + valorDecCord1e3
             mapCar.coords[7] = y + valorDecCord1e3
-
-            // map.areas[5].coords[1] = y    + ( map.areas[5].coords[1] !== undefined ? map.areas[5].coords[1] : 0)
-            // map.areas[5].coords[3] = y+ ( map.areas[5].coords[3] !== undefined ? map.areas[5].coords[3] : 0)
-            // map.areas[5].coords[5] = y - valorDecCord1e3
-            // map.areas[5].coords[7] = y - valorDecCord1e3
         }
 
             //Roda 1
-            map.areas[1].coords[0] = x + valoresIncRoda1[0] - valorDecRodasX
-            map.areas[1].coords[1] = y + valoresIncRoda1[1] - valorDecRodasY
-            map.areas[1].coords[2] = 1
+           mapRoda1.coords[0] = x + valoresIncRoda1[0] - valorDecRodasX
+           mapRoda1.coords[1] = y + valoresIncRoda1[1] - valorDecRodasY
+           mapRoda1.coords[2] = 1
 
             //Roda 2
-            map.areas[2].coords[0] = x +  valoresIncRoda2[0] - valorDecRodasX
-            map.areas[2].coords[1] = y + valoresIncRoda2[1] - valorDecRodasY
-            map.areas[2].coords[2] = 1
+           mapRoda2.coords[0] = x +  valoresIncRoda2[0] - valorDecRodasX
+           mapRoda2.coords[1] = y + valoresIncRoda2[1] - valorDecRodasY
+           mapRoda2.coords[2] = 1
 
             //Roda 3
-            map.areas[3].coords[0] = x +  valoresIncRoda3[0] - valorDecRodasX
-            map.areas[3].coords[1] = y + valoresIncRoda3[1] - valorDecRodasY
-            map.areas[3].coords[2] = 1
+           mapRoda3.coords[0] = x +  valoresIncRoda3[0] - valorDecRodasX
+           mapRoda3.coords[1] = y + valoresIncRoda3[1] - valorDecRodasY
+           mapRoda3.coords[2] = 1
 
             //Roda 4
-            map.areas[4].coords[0] = x + valoresIncRoda4[0] - valorDecRodasX
-            map.areas[4].coords[1] = y +  valoresIncRoda4[1] - valorDecRodasY
-            map.areas[4].coords[2] = 1
+           mapRoda4.coords[0] = x + valoresIncRoda4[0] - valorDecRodasX
+           mapRoda4.coords[1] = y +  valoresIncRoda4[1] - valorDecRodasY
+           mapRoda4.coords[2] = 1
 
             //Tooltip
             let positionTooltip = []
@@ -281,14 +381,6 @@ class TelaPrincipal extends Component {
                 positionTooltip[0] = x + 13
                 positionTooltip[1] = y + 10  //- valorDecRodasY
              }
-
-
-        // map.areas[5].coords[1] = y
-        // map.areas[5].coords[3] = y
-        // map.areas[5].coords[5] = y
-        // map.areas[5].coords[7] = y
-        // map.areas[5].coords = posicaoAnt
-        // posicaoAnt = map.areas[0].coords
 
             this.setState({map: map, hoveredArea: positionTooltip})
 
@@ -333,36 +425,26 @@ class TelaPrincipal extends Component {
         state.showModal = true;
         this.setState(state);
     };
-    getCamposModalObservacao = (event) => {
-        return {
-            showModal: this.state.showModal
-        }
-    };
-    getFuncoesModalObservacao = (event) => {
-        return {
-            handleShowModal: this.handleShowModal,
-            handleCloseModal: this.handleCloseModal,
-        }
-    };
+  
     iconeBateria = () =>{
-        if(this.state.dadosMailCar.instru.bate <= 100 && this.state.dadosMailCar.instru.bate >=90 ){
+        if(parseInt(this.state.dadosMailCar.instru.bate) === 1 ){
             this.state.corIconeBateria = 'green'
             return 'battery-full';
-        }else if(this.state.dadosMailCar.instru.bate <= 20 && this.state.dadosMailCar.instru.bate>=10){
-            this.state.corIconeBateria = 'red'
+        }else if(parseInt(this.state.dadosMailCar.instru.bate) === 3){
+            this.state.corIconeBateria = 'yellow'
             return 'battery-quarter';
         }else{
             return 'battery-full';
         }
     }
     modoOperacao = () =>{
-        if(this.state.dadosMailCar.status.modo === "0"){
+        if(this.state.dadosMailCar.status.modo === 0){
             return 'Desligado';
-        }else if(this.state.dadosMailCar.status.modo === "1"){
+        }else if(this.state.dadosMailCar.status.modo === 1){
             return 'Circular';
-        }else if(this.state.dadosMailCar.status.modo === "2"){
+        }else if(this.state.dadosMailCar.status.modo === 2){
             return 'Expresso';
-        }else if(this.state.dadosMailCar.status.modo === "3"){
+        }else if(this.state.dadosMailCar.status.modo === 3){
             return 'Recarga';
         }else{
             return '';
@@ -393,6 +475,12 @@ class TelaPrincipal extends Component {
                         <Link className="botao-sair" to='/'> Desconectar <FontAwesomeIcon icon='times'></FontAwesomeIcon></Link>
                     </Navbar.Brand>
                 </Navbar>
+                <Alert position='top-right' />
+
+                {/* <Alerta mostrarAlerta={this.state.mostrarAlerta} mensagensAlertas ={this.state.mensagensAlertas}/> */}
+      
+                    
+
                 <ModalModoExpr showModal={this.state.showModal} closeModal={this.closeModal} map={this.state.map} placement={this.state.placement} hoveredArea={this.state.hoveredArea}
                                getTipPosition={this.getTipPosition}/>
                 <Card className="card-tela-principal" style={{boxShadow: 'rgb(169, 166, 166) 2px 2px 12px'}}>
@@ -406,7 +494,7 @@ class TelaPrincipal extends Component {
                                 </Form.Group>
                             </Col>
                             <Col  xs={12} md={3} className='botoes-tela-principal'  style={{ paddingTop: '1.5%', paddingLeft: '7%'}}>
-                                <Button size='sm' disabled={this.state.dadosMailCar.status.modo !== "1"} onClick={this.showModal}>Modo Expresso</Button>
+                                <Button size='sm' disabled={this.state.dadosMailCar.status.modo !== 1} onClick={this.showModal}>Modo Expresso</Button>
                             </Col>
                             <Col xs={12} md={4} className='botoes-tela-principal' style={{ paddingTop: '1.5%', paddingLeft: '4%'}}>
                                 <Button size='sm' onClick={()=> this.visaualizarSensores()}>Visualizar dados dos sensores</Button>
@@ -430,7 +518,7 @@ class TelaPrincipal extends Component {
                                     //  onMouseEnter={area => this.enterArea(area)}
                                     //  onMouseLeave={area => this.leaveArea(area)}
                                      onMouseMove={(area, _, evt) => this.moveOnArea(area, evt)}
-                                    //  onImageClick={evt => this.clickedOutside(evt)}
+                                     onImageClick={evt => this.clickedOutside(evt)}
                                      onImageMouseMove={evt => this.moveOnImage(evt)}
                         />
 
@@ -448,7 +536,7 @@ class TelaPrincipal extends Component {
                         <pre>{this.state.moveMsg ? this.state.moveMsg : null}</pre>
                     </Col>
                 </Row>
-
+                
             </div>
         )
     }
