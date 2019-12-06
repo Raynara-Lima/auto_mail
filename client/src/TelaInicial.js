@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { Button, Row, Navbar, Spinner} from 'react-bootstrap';
+import {Button, Row, Navbar, Spinner, Alert} from 'react-bootstrap';
 import './css/estilo.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {Link} from 'react-router-dom'
@@ -11,6 +11,9 @@ class TelaInicial extends Component {
         super(props);
         this.state = {
         iaLoading: false,
+            mostrarAlerta: false,
+            msgAlerta: '',
+            typeAlert: ''
         }
     }
     interceptorRequest = axios.interceptors.response.use((response) => {
@@ -19,19 +22,34 @@ class TelaInicial extends Component {
       
         return response;
       }, error => {
-          console.log("erro: " + error.response)
+        if(error.message === "Network Error"){
+            error.menssagem = "Erro de conexão, verifique sua conexão de internet ou contate o Administrador."
+
+            return error
+
+        }
+          console.log("erro: " + error.message)
         // handle the response error
         return Promise.reject(error);
       });
+
     iniciar = () =>{
         this.setState({isLoading: true})
-        axios('http://localhost:8080/api/setData', {
+        axios('http://localhost:5000/api/setData', {
             mode:'no-cors',
             method: 'POST',
             // headers:{'Content-Type' : 'application/json', 'Access-Control-Allow-Origin': '*'},
             params: JSON.stringify({  modo: "1", destino: "",sentido: ""})
         })
-            .then(response => {  this.setState({isLoading: false})})
+            .then(response => {
+                if(response.status === 200) {
+                    window.location.href = "/telaPrincipal"
+                    this.setState({isLoading: false})
+                }else{
+                    this.setState({mostrarAlerta: true, msgAlerta: response.menssagem})
+
+                }
+            })
             .catch(err => console.log(err));
 
     
@@ -62,7 +80,7 @@ class TelaInicial extends Component {
                 <Row>
                     <div class="col-sm-12" style={{position:"absolute", top:"50%"}}>
                         <div class="text-center">
-                            <Link to="/telaPrincipal" className="botao-incio" size='lg' 
+                            <Link  className="botao-incio" size='lg'
                             onClick={this.iniciar}
                              >
                                 Iniciar <FontAwesomeIcon icon="sign-in-alt"/> </Link>
@@ -70,7 +88,9 @@ class TelaInicial extends Component {
                         </div>
                     </div>
                 </Row>
-               
+                <Alert variant="danger" show={this.state.mostrarAlerta} onClose={false} bsPrefix="alerta-tela-inicial">
+                    {this.state.msgAlerta}
+                </Alert>
             </div>
 	);
   }

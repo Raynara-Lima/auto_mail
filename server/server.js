@@ -3,7 +3,7 @@ const router = express.Router();
 var cors = require('cors')
 var fs = require('fs')
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 5000;
 var db = require("./db");
 const bodyParser = require("body-parser");
 const {PubSub} = require('@google-cloud/pubsub');
@@ -24,11 +24,13 @@ const http = require('http')
 const server = http.createServer(app)
 const io = socketIO(server)
 
+var ultimaMenssagem = 0
+
 io.on('connection', socket => {
   
  socket.on('getData', () => {
-  getData()
-//   getData()
+    getData()
+   // teste()
       socket.on("disconnect", ()=>{
         console.log("Disconnected")
     })
@@ -41,7 +43,43 @@ getDataSensores(function(data){
 })
  
 })
+function teste(){
+    const topicName = 'Car_output';
 
+    //let json = JSON.parse(req.query[0])
+    const data = JSON.stringify(  {
+        "instru": {
+            "accx": "",
+            "accy": "",
+            "vg": "",
+            "velox": "",
+            "veloy": "",
+            "distan": "",
+            "angulo": "",
+            "bate": "",
+            "enco1": "",
+            "enco2": "",
+            "ultra1": "",
+            "ultra2": "",
+            "ultra3": ""},
+        "status": {
+            "modo": "1"
+        },
+        "coord": {
+            "x": "100",
+            "y": "0"
+        },
+        "erros": []
+
+
+    });
+//console.log(data)
+    const dataBuffer = Buffer.from(data);
+    const messageId =  pubsub.topic(topicName).publish(dataBuffer);
+    console.log(`Message ${messageId} published.`);
+    // publishMessage(topicName, data)
+
+}
 
 server.listen(port, () => console.log(`Listening on port ${port}`))
 
@@ -51,14 +89,14 @@ server.listen(port, () => console.log(`Listening on port ${port}`))
       receberMensagensPubSub(function(data){
 
         if(data.qtdMensagens === 0){
-          //getJson()
+        //  getJson()
         }else if(data.qtdMensagens === 1){
           json = data.json[0]
-         // salvarJson(json)
+       //   salvarJson(json)
           // io.sockets.emit('getData', json, qtdMensagens)
         }else{
           json = data.json[data.qtdMensagens - 1]
-          //salvarJson(json)
+         // salvarJson(json)
           // io.sockets.emit('getData', json, qtdMensagens)
           }
       })
@@ -68,25 +106,6 @@ server.listen(port, () => console.log(`Listening on port ${port}`))
      // return json
     }
 
-    function getDataSensores(){
-      let json
-      receberMensagensPubSub(function(data){
-
-        if(data.qtdMensagens === 0){
-          getJson(function(infoJson){
-          json = infoJson
-        })
-        }else if(data.qtdMensagens === 1){
-          json = data.json[0]
-          salvarJson(json)
-          io.sockets.emit('getData', docs)
-        }else{
-          json = data.json[data.qtdMensagens - 1]
-          salvarJson(json)
-          }
-      })
-     // return json
-    }
 
 
 
@@ -153,19 +172,34 @@ server.listen(port, () => console.log(`Listening on port ${port}`))
 
 
         const subscriptionName = 'Web_App';
-          const timeout = 1;
+          const timeout = 2;
           const subscription = pubsub.subscription(subscriptionName);
           let messageCount = 0;
           let json = []
 
           const messageHandler = message => {
-            console.log(`Received message ${message.id}:`);
            // console.log(`\tData: ${message.data}`);
             messageCount += 1;
-            json.push(JSON.parse(message.data))
-            console.log(JSON.parse(message.data))
-            message.ack(); 
-            io.sockets.emit('getData',JSON.parse(message.data), messageCount)
+            // json.push(JSON.parse(message.data))
+            // console.log(JSON.parse(message.data))
+            message.ack();
+              console.log(`Ordem real ${message.publishTime}:`);
+              // if(ultimaMenssagem === 0){
+              //     getUltimaMsg()
+              // }else {
+                  if (message.publishTime.getFullTimeString() >= ultimaMenssagem) {
+                      let data = JSON.parse(message.data)
+                      console.log(data)
+                      salvarJson(data)
+
+                      console.log(ultimaMenssagem)
+                      console.log(`Received message ${message.publishTime}:`);
+                      console.log(`full time:  ${message.publishTime.getFullTimeString()}:`);
+                      ultimaMenssagem = message.publishTime.getFullTimeString()
+
+                      io.sockets.emit('getData', JSON.parse(message.data), messageCount)
+  //                }
+              }
 
           };
           subscription.on(`message`, messageHandler);
@@ -174,7 +208,7 @@ server.listen(port, () => console.log(`Listening on port ${port}`))
               subscription.removeListener('message', messageHandler);
               console.log(`${messageCount} message(s) received.`);
               return callback({json: json, qtdMensagens:messageCount })
-          }, timeout * 500);
+          }, timeout * 1000);
             
         
 
@@ -182,6 +216,7 @@ server.listen(port, () => console.log(`Listening on port ${port}`))
 
       salvarJson = (json) =>{
         var Informacoes = db.Mongoose.model('infoMailCar', db.InfoSchema, 'infoMailCar');
+        json.ultimaMenssagem = 1
         var info = new Informacoes(json);
 
         info.save(function (err) {
@@ -199,14 +234,23 @@ server.listen(port, () => console.log(`Listening on port ${port}`))
             var InfoJson = db.Mongoose.model('infoMailCar', db.InfoSchema, 'infoMailCar');
             InfoJson.findOne().lean().exec(
                function (e, docs) {
-                 console.log(docs)
+               //  console.log(docs)
                 io.sockets.emit('getData', docs, 0)
 
                // return callback(docs)
 
             });
           }
+function getUltimaMsg(){
+    var InfoJson = db.Mongoose.model('infoMailCar', db.InfoSchema, 'infoMailCar');
+    InfoJson.findOne().lean().exec(
+        function (e, docs) {
+            //  console.log(docs)
+                ultimaMenssagem = docs.ultimaMenssagem
+            // return callback(docs)
 
+        });
+}
 
 router.post('/setData' , (req, res) => {
   const topicName = 'Car_input';

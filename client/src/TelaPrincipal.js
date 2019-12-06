@@ -1,19 +1,13 @@
 import React, {Component} from 'react';
-import 'react-s-alert/dist/s-alert-default.css';
-import 'react-s-alert/dist/s-alert-css-effects/slide.css';
-
-import Alert from 'react-s-alert';
-
 import ImageMapper from 'react-image-mapper';
 import axios from 'axios';
-import { Button, Col, Row, Navbar, Card, Form, Tooltip} from 'react-bootstrap';
+import { Button, Col, Row, Navbar, Card, Form, Tooltip, Alert} from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import './App.css';
 import {Link} from 'react-router-dom'
 import './css/estilo.css'
 import ModalModoExpr from './ModalModoExpr';
 import socketIOClient from "socket.io-client";
-import Alerta from './Alerta';
 const URL = "./mapaV4.jpg";
 
 class TelaPrincipal extends Component {
@@ -71,7 +65,7 @@ class TelaPrincipal extends Component {
                     erros: [{code: 1}, {code: 2}]
             },
             corIconeBateria:  '',
-            endpoint: "http://localhost:8080",
+            endpoint: "http://localhost:5000",
             mostrarAlerta: false,
             mensagensAlertas: []
         }
@@ -79,27 +73,27 @@ class TelaPrincipal extends Component {
          this.socket.on('getData', (json) =>{
            // parseInt(json.status.modo)
             console.log(json)
-
+    //        json.erros = [{code: 1}, {code: 2}]
             this.setState({dadosMailCar: json})
             this.posicionarCar(this.state.dadosMailCar.coord.x, this.state.dadosMailCar.coord.y)
-           // this.mostrarErro()
+           this.mostrarErro()
         })
 
     }
 
-    getMensagem() {
-       // const socket = socketIOClient(this.state.endpoint);
-        this.socket.emit('getData')
 
+    getMensagem() {
+        this.socket.emit('getData')
     }
 
     componentDidMount() {
       //  this.getMensagem()
     this.posicionarCar(this.state.dadosMailCar.coord.x, this.state.dadosMailCar.coord.y)
    this.intervalo = setInterval( () =>  this.getMensagem(), 100);
-    //this.intervalo = setInterval( () =>  this.desenharTrajetoria(), 1000);
+  //  setInterval( () =>             this.mostrarErro(),        1000);
     
    // this.setMensagem()
+
     }
 
     mostrarErro = () =>{
@@ -109,60 +103,31 @@ class TelaPrincipal extends Component {
         }else{
         this.state.dadosMailCar.erros.forEach(erro => {
             if(erro.code === 1){
-                state.mostrarAlerta = true
             let mensagem = this.state.mensagensAlertas.find(msg => msg === "Perda de conexão" )
             if(mensagem === undefined){
                 state.mensagensAlertas.push("Perda de conexão")
             }
-            Alert.success('Message...', {
-                position: 'top-right'
-            });
-            Alert.error('Message...', {
-    position: 'top-right'
-});
-         // Alerta.handleAlert('error', mensagem)
-            }
+             }
             else if(erro.code === 2){
-                state.mostrarAlerta = true
                 let mensagem = this.state.mensagensAlertas.find(msg => msg === "O dispositivo móvel está mais distante do que 20 cm da localização prevista" )
                 if(mensagem === undefined){
                     state.mensagensAlertas.push("O dispositivo móvel está mais distante do que 20 cm da localização prevista")
-    
-                }
 
+                }
             }
             else if(erro.code === 3){
-                state.mostrarAlerta = true
                 let mensagem = this.state.mensagensAlertas.find(msg => msg === "Encoder de uma determinada roda para de funcionar" )
                 if(mensagem === undefined){
                     state.mensagensAlertas.push("Encoder de uma determinada roda para de funcionar")
-    
                 }
-
             }
         
         });
     }
-       // state.mostrarAlerta = false
         this.setState(state)
-
-        // state.mensagensAlertas.map(msg =>{
-        //     Alerta.handleAlert('error', msg)
-
-        // })
-
     }
 
-    // enterArea(area) {
-    //     this.setState({ hoveredArea: area });
-    // }
-    // load() {
-    //     this.setState({ msg: "Interact with image !" });
-    // }
 
-    // leaveArea(area) {
-    //     this.setState({ hoveredArea: area });
-    // }
 
     getTipPosition(positionTooltip) {
         return { top: `${positionTooltip[1]}px`, left: `${positionTooltip[0]}px` , opacity: "1"};
@@ -181,42 +146,12 @@ class TelaPrincipal extends Component {
                 } at coords ${JSON.stringify(coords)} !`
         });
     }
-    clicked = (area) =>{
-        this.setState({
-			msg: `You clicked on ${area.shape} at coords ${JSON.stringify(
-				area.coords
-			)} !`
-		});
-    }
-    clickedOutside(evt) {
-        const coords = { x: evt.nativeEvent.layerX, y: evt.nativeEvent.layerY };
-        this.setState({
-            msg: `You clicked on the image at coords ${JSON.stringify(coords)} !`
-        });
-    }
-    // getMensagem = () => {
-    //     axios.get('http://localhost:8080/api/getData', {mode:'no-cors'})
-    //         .then(response => {
-    //             this.setState({dadosMailCar: response.data.data});
-    //             console.log(response.data)
-    //         }	).catch(err => console.log(err));
 
-    // };
-    setMensagem = () => {
-        axios('http://localhost:8080/api/setData', {
-            mode:'no-cors',
-            method: 'POST',
-            // headers:{'Content-Type' : 'application/json', 'Access-Control-Allow-Origin': '*'},
-            params: JSON.stringify({msg: this.state.mensagem})
-        })
-            .then(response => this.setState({mensagemRecebida: ''}))
-            .catch(err => console.log(err));
-
-    };
 
     posicionarCar = ( xCm, yCm) =>{
         parseFloat(xCm)
         parseFloat(yCm)
+
         let x = 19.2 + (xCm * 0.255)
         let y = 229.55 + (yCm * 0.285)
         let valorDecCord1e3 = 0, valorDecCord0e6 = 0
@@ -385,31 +320,31 @@ class TelaPrincipal extends Component {
             this.setState({map: map, hoveredArea: positionTooltip})
 
     }
-    desenharTrajetoria = () =>{
-
-        //MbM para mb1
-        if(this.state.dadosMailCar.coord.y < 210 && this.state.dadosMailCar.coord.x == 0){
-            for(var i = 0; i <= 5; i++){
-                this.posicionarCar(this.state.dadosMailCar.coord.x , (this.state.dadosMailCar.coord.y + 5))
-                this.state.dadosMailCar.coord.y = this.state.dadosMailCar.coord.y + 5
-            }
-        }else if ( this.state.dadosMailCar.coord.x < 1799  && this.state.dadosMailCar.coord.y >= 210) {
-            for(var i = 0; i <= 5; i++){
-                this.posicionarCar((this.state.dadosMailCar.coord.x + 25) , this.state.dadosMailCar.coord.y )
-                this.state.dadosMailCar.coord.x = this.state.dadosMailCar.coord.x + 25            }
-        }else if(this.state.dadosMailCar.coord.x >= 1799 && this.state.dadosMailCar.coord.y > 0){
-            for(var i = 0; i <= 5; i++){
-                this.posicionarCar(this.state.dadosMailCar.coord.x , (this.state.dadosMailCar.coord.y - 5))
-                this.state.dadosMailCar.coord.y = this.state.dadosMailCar.coord.y - 5
-            }
-
-        }else {
-            for(var i = 0; i <= 5; i++){
-                this.posicionarCar((this.state.dadosMailCar.coord.x - 25) , this.state.dadosMailCar.coord.y )
-                this.state.dadosMailCar.coord.x = this.state.dadosMailCar.coord.x - 25            }
-        }
-
-    }
+    // desenharTrajetoria = () =>{
+    //
+    //     //MbM para mb1
+    //     if(this.state.dadosMailCar.coord.y < 210 && this.state.dadosMailCar.coord.x == 0){
+    //         for(var i = 0; i <= 5; i++){
+    //             this.posicionarCar(this.state.dadosMailCar.coord.x , (this.state.dadosMailCar.coord.y + 5))
+    //             this.state.dadosMailCar.coord.y = this.state.dadosMailCar.coord.y + 5
+    //         }
+    //     }else if ( this.state.dadosMailCar.coord.x < 1799  && this.state.dadosMailCar.coord.y >= 210) {
+    //         for(var i = 0; i <= 5; i++){
+    //             this.posicionarCar((this.state.dadosMailCar.coord.x + 25) , this.state.dadosMailCar.coord.y )
+    //             this.state.dadosMailCar.coord.x = this.state.dadosMailCar.coord.x + 25            }
+    //     }else if(this.state.dadosMailCar.coord.x >= 1799 && this.state.dadosMailCar.coord.y > 0){
+    //         for(var i = 0; i <= 5; i++){
+    //             this.posicionarCar(this.state.dadosMailCar.coord.x , (this.state.dadosMailCar.coord.y - 5))
+    //             this.state.dadosMailCar.coord.y = this.state.dadosMailCar.coord.y - 5
+    //         }
+    //
+    //     }else {
+    //         for(var i = 0; i <= 5; i++){
+    //             this.posicionarCar((this.state.dadosMailCar.coord.x - 25) , this.state.dadosMailCar.coord.y )
+    //             this.state.dadosMailCar.coord.x = this.state.dadosMailCar.coord.x - 25            }
+    //     }
+    //
+    // }
 
     visaualizarSensores = () =>{
         window.open('/sensores')
@@ -451,7 +386,19 @@ class TelaPrincipal extends Component {
         }
     }
 
+    desligar = () =>{
+        this.setState({isLoading: true})
+        axios('http://localhost:5000/api/setData', {
+            mode:'no-cors',
+            method: 'POST',
+            // headers:{'Content-Type' : 'application/json', 'Access-Control-Allow-Origin': '*'},
+            params: JSON.stringify({  modo: "0", destino: "",sentido: ""})
+        })
+            .then(response => {  this.setState({isLoading: false})})
+            .catch(err => console.log(err));
 
+
+    }
     render(){
             //const socket = socketIOClient(this.state.endpoint);
 
@@ -472,14 +419,17 @@ class TelaPrincipal extends Component {
                         <Button className="botao-contato"> Contato</Button>
                     </Navbar.Brand>
                     <Navbar.Brand className="contato-menu">   
-                        <Link className="botao-sair" to='/'> Desconectar <FontAwesomeIcon icon='times'></FontAwesomeIcon></Link>
+                        <Link className="botao-sair" to='/' onClick={this.desligar}> Desconectar <FontAwesomeIcon icon='times'></FontAwesomeIcon></Link>
                     </Navbar.Brand>
                 </Navbar>
-                <Alert position='top-right' />
-
-                {/* <Alerta mostrarAlerta={this.state.mostrarAlerta} mensagensAlertas ={this.state.mensagensAlertas}/> */}
-      
-                    
+                {/*<Alerta position='top-right' />*/}
+                <div className='alerta'>
+                    {this.state.mensagensAlertas.map(msg =>
+                <Alert variant="danger" show={true} onClose={false} >
+                    {msg}
+                </Alert>
+                    )}
+                </div>
 
                 <ModalModoExpr showModal={this.state.showModal} closeModal={this.closeModal} map={this.state.map} placement={this.state.placement} hoveredArea={this.state.hoveredArea}
                                getTipPosition={this.getTipPosition}/>
@@ -513,10 +463,6 @@ class TelaPrincipal extends Component {
                 <Row style={{paddingTop: '70px'}}>
                     <Col md={6} style={{marginLeft: '30%'}}>
                         <ImageMapper src={URL} map={this.state.map} width={500}
-                                    //  onLoad={() => this.load()}
-                                    //  onClick={area => this.clicked(area)}
-                                    //  onMouseEnter={area => this.enterArea(area)}
-                                    //  onMouseLeave={area => this.leaveArea(area)}
                                      onMouseMove={(area, _, evt) => this.moveOnArea(area, evt)}
                                      onImageClick={evt => this.clickedOutside(evt)}
                                      onImageMouseMove={evt => this.moveOnImage(evt)}
@@ -536,7 +482,7 @@ class TelaPrincipal extends Component {
                         <pre>{this.state.moveMsg ? this.state.moveMsg : null}</pre>
                     </Col>
                 </Row>
-                
+
             </div>
         )
     }

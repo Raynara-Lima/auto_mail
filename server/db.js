@@ -23,7 +23,8 @@ var infoSchema = new mongoose.Schema({
         coord: {
             x: Number,
             y: Number},
-        erros: Array
+        erros: Array,
+    ultimaMenssagem: Number
    
 }, { collection: 'infoMailCar' }
 );
