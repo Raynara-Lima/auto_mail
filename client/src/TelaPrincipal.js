@@ -69,7 +69,7 @@ class TelaPrincipal extends Component {
                     erros: [{code: 1}, {code: 2}]
             },
             corIconeBateria:  '',
-            endpoint: "http://localhost:5000",
+            endpoint: "http://localhost:8080",
             mostrarAlerta: false,
             mensagensAlertas: []
         }
@@ -401,7 +401,7 @@ class TelaPrincipal extends Component {
 
     desligar = () =>{
         this.setState({isLoading: true})
-        axios('http://localhost:5000/api/setData', {
+        axios('http://localhost:8080/api/setData', {
             mode:'no-cors',
             method: 'POST',
             // headers:{'Content-Type' : 'application/json', 'Access-Control-Allow-Origin': '*'},

@@ -33,7 +33,7 @@ class TelaInicial extends Component {
 
     iniciar = () =>{
         this.setState({isLoading: true})
-        axios('http://10.128.0.3:5000/api/setData', {
+        axios('http://localhost:8080/api/setData', {
             mode:'no-cors',
             method: 'POST',
             params: JSON.stringify({  modo: "1", destino: "",sentido: ""})

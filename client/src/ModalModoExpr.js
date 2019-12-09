@@ -61,7 +61,7 @@ class ModalModoExpr extends Component {
         if(this.state.sentido !== "" && this.state.destino !== "") {
             this.setState({isLoading: true})
 
-            axios('http://localhost:5000/api/setData', {
+            axios('http://localhost:8080/api/setData', {
                 mode: 'no-cors',
                 method: 'POST',
                 // headers:{'Content-Type' : 'application/json', 'Access-Control-Allow-Origin': '*'},
