@@ -8,6 +8,10 @@ import {Link} from 'react-router-dom'
 import './css/estilo.css'
 import ModalModoExpr from './ModalModoExpr';
 import socketIOClient from "socket.io-client";
+import Alerta from "react-s-alert";
+import 'react-s-alert/dist/s-alert-default.css';
+import 'react-s-alert/dist/s-alert-css-effects/slide.css';
+
 const URL = "./mapaV4.jpg";
 
 class TelaPrincipal extends Component {
@@ -151,9 +155,13 @@ class TelaPrincipal extends Component {
     posicionarCar = ( xCm, yCm) =>{
         parseFloat(xCm)
         parseFloat(yCm)
-
         let x = 19.2 + (xCm * 0.255)
-        let y = 229.55 + (yCm * 0.285)
+        let y
+        if(yCm < 0){
+            y = 286.6 - (yCm * 0.285)
+        }else {
+            y = 232.4 + (yCm * 0.285)
+        }
         let valorDecCord1e3 = 0, valorDecCord0e6 = 0
         let valoresIncRoda1 = []
         let valoresIncRoda2 = []
@@ -301,7 +309,7 @@ class TelaPrincipal extends Component {
 
             //Tooltip
             let positionTooltip = []
-            let xi = 19.2, yi = 229.55, xf = 479.8, yf = 289.45
+            let xi = 19.2, yi = 232.4, xf = 479.8, yf = 286.6
 
             if (x <= xi && y >= yi && this.state.dadosMailCar.coord.y <=yf){
                 this.state.placement = 'right'
@@ -350,10 +358,15 @@ class TelaPrincipal extends Component {
         window.open('/sensores')
 
     }
-    closeModal = () => {
+    closeModal = (msgAlerta) => {
+
         let state = this.state;
         state.showModal = false;
         this.setState(state);
+        if(msgAlerta) {
+            Alerta.success(msgAlerta, {});
+        }
+
     };
     showModal = () => {
         let state = this.state;
@@ -422,7 +435,7 @@ class TelaPrincipal extends Component {
                         <Link className="botao-sair" to='/' onClick={this.desligar}> Desconectar <FontAwesomeIcon icon='times'></FontAwesomeIcon></Link>
                     </Navbar.Brand>
                 </Navbar>
-                {/*<Alerta position='top-right' />*/}
+                <Alerta position='top-right' />
                 <div className='alerta'>
                     {this.state.mensagensAlertas.map(msg =>
                 <Alert variant="danger" show={true} onClose={false} >

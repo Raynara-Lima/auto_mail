@@ -1,10 +1,14 @@
 import React, {Component} from 'react';
-import {Button, Row, Navbar, Spinner, Alert} from 'react-bootstrap';
+import {Button, Row, Navbar, Alert} from 'react-bootstrap';
 import './css/estilo.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {Link} from 'react-router-dom'
 import axios from 'axios';
-
+import Alerta from 'react-s-alert'
+import 'react-s-alert/dist/s-alert-default.css';
+import 'react-s-alert/dist/s-alert-css-effects/slide.css';
+import Spinner from './Spinner'
+import  './css/spinner.css'
 class TelaInicial extends Component {
 
     constructor(props){
@@ -17,19 +21,13 @@ class TelaInicial extends Component {
         }
     }
     interceptorRequest = axios.interceptors.response.use((response) => {
-        // do something with the response data
-        console.log(response);
-      
         return response;
       }, error => {
         if(error.message === "Network Error"){
             error.menssagem = "Erro de conexão, verifique sua conexão de internet ou contate o Administrador."
-
             return error
-
         }
           console.log("erro: " + error.message)
-        // handle the response error
         return Promise.reject(error);
       });
 
@@ -38,7 +36,6 @@ class TelaInicial extends Component {
         axios('http://localhost:5000/api/setData', {
             mode:'no-cors',
             method: 'POST',
-            // headers:{'Content-Type' : 'application/json', 'Access-Control-Allow-Origin': '*'},
             params: JSON.stringify({  modo: "1", destino: "",sentido: ""})
         })
             .then(response => {
@@ -46,8 +43,9 @@ class TelaInicial extends Component {
                     window.location.href = "/telaPrincipal"
                     this.setState({isLoading: false})
                 }else{
-                    this.setState({mostrarAlerta: true, msgAlerta: response.menssagem})
-
+                    this.setState({isLoading: false})
+                    Alerta.error(response.menssagem, {
+                    });
                 }
             })
             .catch(err => console.log(err));
@@ -73,10 +71,8 @@ class TelaInicial extends Component {
                         <Button className="botao-contato"> Contato</Button>
                     </Navbar.Brand>
                 </Navbar>
-                {this.state.isLoading ? 
-                <Spinner animation="border" role="status">
-                <span className="sr-only">Loading...</span>
-              </Spinner>: ""}
+                <Spinner isSendingRequest={this.state.isLoading}/>
+
                 <Row>
                     <div class="col-sm-12" style={{position:"absolute", top:"50%"}}>
                         <div class="text-center">
@@ -88,9 +84,8 @@ class TelaInicial extends Component {
                         </div>
                     </div>
                 </Row>
-                <Alert variant="danger" show={this.state.mostrarAlerta} onClose={false} bsPrefix="alerta-tela-inicial">
-                    {this.state.msgAlerta}
-                </Alert>
+                <Alerta position='top-right' />
+
             </div>
 	);
   }

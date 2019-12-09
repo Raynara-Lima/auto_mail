@@ -88,17 +88,9 @@ server.listen(port, () => console.log(`Listening on port ${port}`))
       let json
       receberMensagensPubSub(function(data){
 
-        if(data.qtdMensagens === 0){
-        //  getJson()
-        }else if(data.qtdMensagens === 1){
-          json = data.json[0]
-       //   salvarJson(json)
-          // io.sockets.emit('getData', json, qtdMensagens)
-        }else{
-          json = data.json[data.qtdMensagens - 1]
-         // salvarJson(json)
-          // io.sockets.emit('getData', json, qtdMensagens)
-          }
+        if( ultimaMenssagem === 0){
+          getJson()
+        }
       })
 
       //console.log(json)
@@ -175,7 +167,7 @@ server.listen(port, () => console.log(`Listening on port ${port}`))
           const timeout = 2;
           const subscription = pubsub.subscription(subscriptionName);
           let messageCount = 0;
-          let json = []
+          let json
 
           const messageHandler = message => {
            // console.log(`\tData: ${message.data}`);
@@ -188,9 +180,9 @@ server.listen(port, () => console.log(`Listening on port ${port}`))
               //     getUltimaMsg()
               // }else {
                   if (message.publishTime.getFullTimeString() >= ultimaMenssagem) {
-                      let data = JSON.parse(message.data)
-                      console.log(data)
-                      salvarJson(data)
+                      json = JSON.parse(message.data)
+                      console.log(json)
+                      salvarJson(json)
 
                       console.log(ultimaMenssagem)
                       console.log(`Received message ${message.publishTime}:`);
@@ -257,12 +249,12 @@ router.post('/setData' , (req, res) => {
 
   let json = JSON.parse(req.query[0])
   const data = JSON.stringify( json);
-console.log(data)
   const dataBuffer = Buffer.from(data);
   publishMessage(topicName, dataBuffer)
   
-  res.setHeader('Access-Control-Allow-Origin', '*');  
-  return res.json({ success: true}); 
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  return res.json({ success: false});
 })
 
 

@@ -1,25 +1,16 @@
 import React, {Component} from 'react';
 import {
-    Badge,
     Form,
-    Dropdown,
-    DropdownButton,
     Modal,
-    FormControl,
     Button,
     Col,
     Row,
-    ButtonToolbar,
-    ToggleButtonGroup,
-    ToggleButton,
-    Image,
     Container,
-    ButtonGroup,
-    Tooltip
 } from 'react-bootstrap';
 import ImageMapper from 'react-image-mapper';
 import axios from 'axios';
-//import "../public/mapaV4.jpg"
+import Alerta from "react-s-alert";
+import Spinner from "./Spinner";
 const URL = "./mapaV4.jpg"
 var value
 
@@ -30,31 +21,71 @@ class ModalModoExpr extends Component {
         super();
     
         this.state = {
+            isLoading: false,
           sentido: "",
           destino: "",
             map:  {name: "map",
                 areas: [
-                    { name: "mb1", shape: "poly", coords: [259, 202, 285, 202, 285, 221, 259, 221], preFillColor: "#FFCD00",  strokeColor: "#FFCD00" },
+                    { name: "mb3", shape: "poly", coords: [72, 299, 92, 299, 92, 318, 72, 318], preFillColor: "#FFCD00",  strokeColor: "#FFCD00" },
+
+                    { name: "mb4", shape: "poly", coords: [406, 299, 427, 299, 427, 318, 406, 318], preFillColor: "#FFCD00",  strokeColor: "#FFCD00" },
 
                     { name: "mb2", shape: "poly", coords: [464, 202, 489, 202, 489, 221, 464, 221], preFillColor: "#FFCD00",  strokeColor: "#FFCD00" },
-                    { name: "mb3", shape: "poly", coords: [72, 299, 92, 299, 92, 318, 72, 318], preFillColor: "#FFCD00",  strokeColor: "#FFCD00" },
-                    { name: "mb4", shape: "poly", coords: [406, 299, 427, 299, 427, 318, 406, 318], preFillColor: "#FFCD00",  strokeColor: "#FFCD00" },
+
+                    { name: "mb1", shape: "poly", coords: [259, 202, 285, 202, 285, 221, 259, 221], preFillColor: "#FFCD00",  strokeColor: "#FFCD00" },
+
 
                 ]},
         }
       }
 
-      
+    interceptorRequest = axios.interceptors.response.use((response) => {
+        return response;
+    }, error => {
+        if(error.message === "Network Error"){
+            error.menssagem = "Erro de conexão, verifique sua conexão de internet ou contate o Administrador."
+            return error
+        }
+        console.log("erro: " + error.message)
+        return Promise.reject(error);
+    });
     enviarDadosModoExpr = () =>{
-        axios('http://localhost:8080/api/setData', {
-            mode:'no-cors',
-            method: 'POST',
-            // headers:{'Content-Type' : 'application/json', 'Access-Control-Allow-Origin': '*'},
-            params: JSON.stringify({ modo: "3" ,destino: this.state.destino ,sentido: this.state.sentido })
-        })
-            .then(response => console.log(response.status))
-            this.props.closeModal()
-            // .catch(err => console.log(err));
+        if(this.state.sentido === ""){
+            Alerta.error("Escolha o sentido", {});
+
+        }
+        if(this.state.destino === ""){
+            Alerta.error("Escolha o destino", {});
+
+        }
+        if(this.state.sentido !== "" && this.state.destino !== "") {
+            this.setState({isLoading: true})
+
+            axios('http://localhost:5000/api/setData', {
+                mode: 'no-cors',
+                method: 'POST',
+                // headers:{'Content-Type' : 'application/json', 'Access-Control-Allow-Origin': '*'},
+                params: JSON.stringify({modo: "3", destino: this.state.destino, sentido: this.state.sentido})
+            })
+                .then(response => {
+                    if (response.status === 200) {
+                        let state = this.state
+                        this.setState({isLoading: false, destino: "", sentido: ""})
+                        let msgAlerta = "Modo expresso foi solicitado"
+                        // state.map.areas[this.state.destino].strokeColor = '#FFCD00'
+                        // state.map.areas[this.state.destino].preFillColor = '#FFCD00'
+                        // this.setState(state)
+
+                        this.props.closeModal(msgAlerta)
+
+
+                    } else {
+                        this.setState({isLoading: false})
+                        Alerta.error(response.menssagem, {});
+                    }
+                }).catch(err => console.log(err));
+        }
+
 
     }
     
@@ -80,12 +111,10 @@ class ModalModoExpr extends Component {
                 map.areas[indice].preFillColor = '#FFCD00'
             }
         });
-     //   console.log(indiceArea)
         map.areas[indiceArea].strokeColor = 'black'
         map.areas[indiceArea].preFillColor = 'black'
         this.state.destino = parseInt(indiceArea) + 1
        this.setState({map: map})
-     //  console.log(area)
     }
     render() {
         return (
@@ -112,76 +141,15 @@ class ModalModoExpr extends Component {
                         <ImageMapper src={URL}
                                      map={this.state.map}
                                      width={500}
-                            //  onLoad={() => this.load()}
                              onClick={area => this.clicked(area)}
-                             // onMouseEnter={area => this.enterArea(area)}
-                            //  onMouseLeave={area => this.leaveArea(area)}
-                            //          onMouseMove={(area, _, evt) => this.moveOnArea(area, evt)}
-                            //  onImageClick={evt => this.clickedOutside(evt)}
-                            //          onImageMouseMove={evt => this.moveOnImage(evt)}
                         />
 
-                        {/*{this.props.hoveredArea && (*/}
-                            {/*<Tooltip id="overlay-example"*/}
-                                     {/*placement={this.props.placement}*/}
-                                     {/*style={{ ...this.props.getTipPosition(this.props.hoveredArea) }}>*/}
-                                {/*MailCar*/}
-                            {/*</Tooltip>*/}
-
-                        {/*)}*/}
-                        {/*<Image width='75%' src="./mapaV4.jpg" />*/}
-                        
                     </div>
-                <Container>
+                    <Alerta position='top-right' />
+
+                    <Spinner isSendingRequest={this.state.isLoading}/>
 
                     <Container>
-
-                    </Container>  
-                        {/*<Row style = {{ width: "100%", height: "40px"}}>*/}
-                            {/*<Form.Group onChange={this.handleChangeMailBox}>*/}
-                                {/*<Col >*/}
-                                    {/*<Form.Check */}
-                                        {/*custom  */}
-                                        {/*inline*/}
-                                        {/*type="radio"*/}
-                                        {/*label="Mb 1" */}
-                                        {/*name="Mailbox"*/}
-                                        {/*id="1"*/}
-                                        {/*/>*/}
-                                        {/*<Form.Check*/}
-                                        {/*custom  */}
-                                        {/*inline*/}
-                                        {/*type="radio"*/}
-                                        {/*label="Mb 2"*/}
-                                        {/*name="Mailbox"*/}
-                                        {/*id="2"*/}
-                                        {/*/>*/}
-                                        {/*<Form.Check */}
-                                        {/*custom  */}
-                                        {/*inline*/}
-                                        {/*type="radio"*/}
-                                        {/*label="Mb 3" */}
-                                        {/*name="Mailbox"*/}
-                                        {/*id="3"*/}
-                                        {/*/>*/}
-                                        {/**/}
-                                        {/*<Form.Check*/}
-                                        {/*custom  */}
-                                        {/*inline*/}
-                                        {/*type="radio"*/}
-                                        {/*label="Mb 4"*/}
-                                        {/*name="Mailbox"*/}
-                                        {/*id="4"*/}
-                                        {/*/>*/}
-                                       {/**/}
-                                {/**/}
-                                {/*</Col>*/}
-                            {/*</Form.Group>   */}
-                        {/*</Row>*/}
-                </Container> 
-                
-                
-                <Container>
                     <Row>
                         <Col>
                         
@@ -202,12 +170,6 @@ class ModalModoExpr extends Component {
                             <option value="2">Mailbox para Mailbox Master</option>
                         </Form.Control>
                         </label>
-                            {/* <ButtonGroup>                   
-                            <DropdownButton variant="light"  title={this.state.dropDownValue}   id="dropdown-item-button" >
-                                <Dropdown.Item eventKey="1" onClick = {e => this.changeValue("Mailbox Master para Mailbox")} >  Mailbox Master para Mailbox</Dropdown.Item>
-                                <Dropdown.Item eventKey="2" onClick = {e => this.changeValue("Mailbox para Mailbox Master")}>Mailbox para Mailbox Master</Dropdown.Item>
-                            </DropdownButton>
-                            </ButtonGroup> */}
                         </Col>   
                     </Row>
 
